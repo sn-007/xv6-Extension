@@ -101,6 +101,7 @@ allocpid() {
 // If found, initialize state required to run in the kernel,
 // and return with p->lock held.
 // If there are no free procs, or a memory allocation fails, return 0.
+//SNXX ADDED
 static struct proc*
 allocproc(void)
 {
@@ -119,6 +120,7 @@ allocproc(void)
 found:
   p->pid = allocpid();
   p->state = USED;
+  p->c_time = 0; //SNXXADDEDHERE
 
   // Allocate a trapframe page.
   if((p->trapframe = (struct trapframe *)kalloc()) == 0){
@@ -221,7 +223,7 @@ uchar initcode[] = {
   0x00, 0x00, 0x00, 0x00
 };
 
-// Set up first user process.
+// Set up first user process. // SNXX: has to update the stime here
 void
 userinit(void)
 {
@@ -268,7 +270,8 @@ growproc(int n)
 }
 
 // Create a new process, copying the parent.
-// Sets up child kernel stack to return as if from fork() system call.
+// Sets up child kernel stack to return as if from fork() system call. 
+//SNXX:again has to update stime here
 int
 fork(void)
 {
@@ -336,6 +339,7 @@ reparent(struct proc *p)
 // Exit the current process.  Does not return.
 // An exited process remains in the zombie state
 // until its parent calls wait().
+//SNXX: has to update etime here
 void
 exit(int status)
 {
@@ -434,16 +438,21 @@ wait(uint64 addr)
 //  - swtch to start running that process.
 //  - eventually that process transfers control
 //    via swtch back to the scheduler.
+// SNXX: has to do a lot of shit here
 void
 scheduler(void)
 {
-  struct proc *p;
+  
   struct cpu *c = mycpu();
   
   c->proc = 0;
   for(;;){
     // Avoid deadlock by ensuring that devices can interrupt.
     intr_on();
+
+#ifdef RR
+
+    struct proc *p;
 
     for(p = proc; p < &proc[NPROC]; p++) {
       acquire(&p->lock);
@@ -461,6 +470,42 @@ scheduler(void)
       }
       release(&p->lock);
     }
+#endif
+
+#ifdef FCFS
+  struct proc *min, *pi, *pj;
+  
+  for(pi = proc; pi < &proc[NPROC]; pi++) 
+  {
+    acquire(&pi->lock);
+    if(pi->state == RUNNABLE)
+    {
+      min =pi;
+      for(pj = proc; pj < &proc[NPROC]; pj++) 
+      {
+        //acquire(&pj->lock);
+        if(pj->state == RUNNABLE && pj->pid >2)
+        {
+          if(min->c_time > pj->c_time) min =pj;
+        }
+        //release(&pj->lock);
+      }
+
+      min->state = RUNNING;
+      c->proc = min;
+      swtch(&c->context, &min->context);
+      c->proc = 0;
+    }
+    release(&pi->lock);
+  }
+#endif
+
+#ifdef PBS
+#endif
+
+#ifdef MLFQ
+#endif
+
   }
 }
 
@@ -492,6 +537,7 @@ sched(void)
 }
 
 // Give up the CPU for one scheduling round.
+//SNXX: has to update stime here
 void
 yield(void)
 {
@@ -525,6 +571,7 @@ forkret(void)
 
 // Atomically release lock and sleep on chan.
 // Reacquires lock when awakened.
+//SNXX: has to deal with some priority stuff here
 void
 sleep(void *chan, struct spinlock *lk)
 {
@@ -556,6 +603,7 @@ sleep(void *chan, struct spinlock *lk)
 
 // Wake up all processes sleeping on chan.
 // Must be called without any p->lock.
+//SNXX: has to update stime here
 void
 wakeup(void *chan)
 {

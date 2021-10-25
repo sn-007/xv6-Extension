@@ -95,3 +95,31 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+uint64
+sys_strace(void)
+{
+  int mask;
+  if(argint(0, &mask) < 0)
+    return -1;
+
+  //printf(" from kernel: mask is %d\n",mask);
+#ifdef RR
+  printf("RR\n");
+#endif
+
+#ifdef PBS
+  printf("PBS\n");
+#endif
+
+#ifdef FCFS
+  printf("FCFS\n");
+#endif
+
+#ifdef MLFQ
+  printf("MLFQ\n");
+#endif
+
+
+  return 0;
+}

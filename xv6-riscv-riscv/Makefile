@@ -48,6 +48,12 @@ TOOLPREFIX := $(shell if riscv64-unknown-elf-objdump -i 2>&1 | grep 'elf64-big' 
 	echo "***" 1>&2; exit 1; fi)
 endif
 
+#For assignment start
+ifndef SCHEDULER
+SCHEDULER="RR"
+endif
+#For assignment end
+
 QEMU = qemu-system-riscv64
 
 CC = $(TOOLPREFIX)gcc
@@ -56,12 +62,15 @@ LD = $(TOOLPREFIX)ld
 OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
 
-CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer -ggdb
+CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer -ggdb  
+CFLAGS += -D $(SCHEDULER) # adding scheduler to cflags
 CFLAGS += -MD
 CFLAGS += -mcmodel=medany
 CFLAGS += -ffreestanding -fno-common -nostdlib -mno-relax
 CFLAGS += -I.
 CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
+
+
 
 # Disable PIE when possible (for Ubuntu 16.10 toolchain)
 ifneq ($(shell $(CC) -dumpspecs 2>/dev/null | grep -e '[^f]no-pie'),)
@@ -128,10 +137,13 @@ UPROGS=\
 	$U/_rm\
 	$U/_sh\
 	$U/_stressfs\
+	$U/_strace\
 	$U/_usertests\
 	$U/_grind\
 	$U/_wc\
 	$U/_zombie\
+
+	
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
@@ -159,6 +171,12 @@ endif
 QEMUOPTS = -machine virt -bios none -kernel $K/kernel -m 128M -smp $(CPUS) -nographic
 QEMUOPTS += -drive file=fs.img,if=none,format=raw,id=x0
 QEMUOPTS += -device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0
+
+#for assignment start
+# flags:
+# 	@echo $(SCHEDULER)
+#for assignment end
+
 
 qemu: $K/kernel fs.img
 	$(QEMU) $(QEMUOPTS)
