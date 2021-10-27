@@ -107,5 +107,17 @@ struct proc {
   char name[16];               // Process name (debugging)
 
   //adding my variables here____________________________________________________________________
-  int c_time;
+  int mask;
+  int c_time;      // When was the process created
+  int s_time;      // When was the process started becomes runnable resets to zero
+  int iow_time;    // time for which process is SLEEPING.
+  int tot_wtime;   // total waittime for cpu for a process.
+  int r_time;      // how long the process is running
+  int e_time;      // When was the process exited
+  int SP;          // Static Priority 
+  int DP;          // Dyanamci priority or net priority
+  int niceness;    // niceness value 
+  int n_run;       // number of times a process is picked by a  cpu
 };
+
+void updatetime();

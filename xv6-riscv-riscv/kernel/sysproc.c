@@ -99,26 +99,27 @@ sys_uptime(void)
 uint64
 sys_strace(void)
 {
-  int mask;
-  if(argint(0, &mask) < 0)
+  
+  if(argint(0, &myproc()->mask) < 0)
     return -1;
+  //printf("recieved mask it is nothing but %d\n",myproc()->mask);
 
   //printf(" from kernel: mask is %d\n",mask);
-#ifdef RR
-  printf("RR\n");
-#endif
+// #ifdef RR
+//   printf("RR\n");
+// #endif
 
-#ifdef PBS
-  printf("PBS\n");
-#endif
+// #ifdef PBS
+//   printf("PBS\n");
+// #endif
 
-#ifdef FCFS
-  printf("FCFS\n");
-#endif
+// #ifdef FCFS
+//   printf("FCFS\n");
+// #endif
 
-#ifdef MLFQ
-  printf("MLFQ\n");
-#endif
+// #ifdef MLFQ
+//   printf("MLFQ\n");
+// #endif
 
 
   return 0;

@@ -137,12 +137,177 @@ syscall(void)
   int num;
   struct proc *p = myproc();
 
+
   num = p->trapframe->a7;
-  if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
+  if(num > 0 && num < NELEM(syscalls) && syscalls[num]) 
+  {
     p->trapframe->a0 = syscalls[num]();
-  } else {
+    
+  } 
+  else 
+  {
     printf("%d %s: unknown sys call %d\n",
             p->pid, p->name, num);
     p->trapframe->a0 = -1;
   }
+  
+    
+  if (p->mask & (1<<num)) 
+  {
+    switch(num)
+    {
+      case 1:
+        printf("%d: syscall fork{} => %d\n", p->pid,  p->trapframe->a0);
+        break;
+      case 2:
+        printf("%d: syscall exit{} => %d\n", p->pid,  p->trapframe->a0);
+        break;
+      case 3:
+        printf("%d: syscall wait{} => %d\n", p->pid,  p->trapframe->a0);
+        break;
+      case 4:
+        printf("%d: syscall pipe{} => %d\n", p->pid,  p->trapframe->a0);
+        break;
+      case 5:
+        printf("%d: syscall read{} => %d\n", p->pid,  p->trapframe->a0);
+        break;
+      case 6:
+        printf("%d: syscall kill{} => %d\n", p->pid,  p->trapframe->a0);
+        break;
+      case 7:
+        printf("%d: syscall exec{} => %d\n", p->pid,  p->trapframe->a0);
+        break;
+      case 8:
+        printf("%d: syscall fstat{} => %d\n", p->pid,  p->trapframe->a0);
+        break;
+      case 9:
+        printf("%d: syscall chdir{} => %d\n", p->pid,  p->trapframe->a0);
+        break;
+      case 10:
+        printf("%d: syscall dup{} => %d\n", p->pid,  p->trapframe->a0);
+        break;
+      case 11:
+        printf("%d: syscall getpid{} => %d\n", p->pid,  p->trapframe->a0);
+        break;
+      case 12:
+        printf("%d: syscall sbrk{} => %d\n", p->pid,  p->trapframe->a0);
+        break;
+      case 13:
+        printf("%d: syscall sleep{} => %d\n", p->pid,  p->trapframe->a0);
+        break;
+      case 14:
+        printf("%d: syscall uptime{} => %d\n", p->pid,  p->trapframe->a0);
+        break;
+      case 15:
+        printf("%d: syscall open{} => %d\n", p->pid,  p->trapframe->a0);
+        break;
+      case 16:
+        printf("%d: syscall write{} => %d\n", p->pid,  p->trapframe->a0);
+        break;
+      case 17:
+        printf("%d: syscall mknod{} => %d\n", p->pid,  p->trapframe->a0);
+        break;
+      case 18:
+        printf("%d: syscall unlink{} => %d\n", p->pid,  p->trapframe->a0);
+        break;
+      case 19:
+        printf("%d: syscall link{} => %d\n", p->pid,  p->trapframe->a0);
+        break;
+      case 20:
+        printf("%d: syscall mkdir{} => %d\n", p->pid,  p->trapframe->a0);
+        break;
+      case 21:
+        printf("%d: syscall close{} => %d\n", p->pid,  p->trapframe->a0);
+        break;
+      case 22:
+        printf("%d: syscall strace{} => %d\n", p->pid,  p->trapframe->a0);
+        break;
+
+
+    }
+
+    
+    
+      
+
+
+
+    
+  }
+  
+  
 }
+
+/*
+switch(num)
+    {
+      case 1:
+        printf("pid is %d-------num is %d---------syscall is fork-----------return value is %d\n", p->pid, num, p->trapframe->a0);
+        break;
+      case 2:
+        printf("pid is %d-------num is %d---------syscall is exit-----------return value is %d\n", p->pid, num, p->trapframe->a0);
+        break;
+      case 3:
+        printf("pid is %d-------num is %d---------syscall is wait-----------return value is %d\n", p->pid, num, p->trapframe->a0);
+        break;
+      case 4:
+        printf("pid is %d-------num is %d---------syscall is pipe-----------return value is %d\n", p->pid, num, p->trapframe->a0);
+        break;
+      case 5:
+        printf("pid is %d-------num is %d---------syscall is read-----------return value is %d\n", p->pid, num, p->trapframe->a0);
+        break;
+      case 6:
+        printf("pid is %d-------num is %d---------syscall is kill-----------return value is %d\n", p->pid, num, p->trapframe->a0);
+        break;
+      case 7:
+        printf("pid is %d-------num is %d---------syscall is exec-----------return value is %d\n", p->pid, num, p->trapframe->a0);
+        break;
+      case 8:
+        printf("pid is %d-------num is %d---------syscall is fstat-----------return value is %d\n", p->pid, num, p->trapframe->a0);
+        break;
+      case 9:
+        printf("pid is %d-------num is %d---------syscall is chdir-----------return value is %d\n", p->pid, num, p->trapframe->a0);
+        break;
+      case 10:
+        printf("pid is %d-------num is %d---------syscall is dup-----------return value is %d\n", p->pid, num, p->trapframe->a0);
+        break;
+      case 11:
+        printf("pid is %d-------num is %d---------syscall is getpid-----------return value is %d\n", p->pid, num, p->trapframe->a0);
+        break;
+      case 12:
+        printf("pid is %d-------num is %d---------syscall is sbrk-----------return value is %d\n", p->pid, num, p->trapframe->a0);
+        break;
+      case 13:
+        printf("pid is %d-------num is %d---------syscall is sleep-----------return value is %d\n", p->pid, num, p->trapframe->a0);
+        break;
+      case 14:
+        printf("pid is %d-------num is %d---------syscall is uptime-----------return value is %d\n", p->pid, num, p->trapframe->a0);
+        break;
+      case 15:
+        printf("pid is %d-------num is %d---------syscall is open-----------return value is %d\n", p->pid, num, p->trapframe->a0);
+        break;
+      case 16:
+        printf("pid is %d-------num is %d---------syscall is write-----------return value is %d\n", p->pid, num, p->trapframe->a0);
+        break;
+      case 17:
+        printf("pid is %d-------num is %d---------syscall is mknod-----------return value is %d\n", p->pid, num, p->trapframe->a0);
+        break;
+      case 18:
+        printf("pid is %d-------num is %d---------syscall is unlink-----------return value is %d\n", p->pid, num, p->trapframe->a0);
+        break;
+      case 19:
+        printf("pid is %d-------num is %d---------syscall is link-----------return value is %d\n", p->pid, num, p->trapframe->a0);
+        break;
+      case 20:
+        printf("pid is %d-------num is %d---------syscall is mkdir-----------return value is %d\n", p->pid, num, p->trapframe->a0);
+        break;
+      case 21:
+        printf("pid is %d-------num is %d---------syscall is close-----------return value is %d\n", p->pid, num, p->trapframe->a0);
+        break;
+      case 22:
+        printf("pid is %d-------num is %d---------syscall is strace-----------return value is %d\n", p->pid, num, p->trapframe->a0);
+        break;
+
+
+    }
+    */

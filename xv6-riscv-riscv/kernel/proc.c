@@ -14,6 +14,7 @@ struct proc *initproc;
 
 int nextpid = 1;
 struct spinlock pid_lock;
+int lastproc =-1,sncount=0;
 
 extern void forkret(void);
 static void freeproc(struct proc *p);
@@ -120,7 +121,33 @@ allocproc(void)
 found:
   p->pid = allocpid();
   p->state = USED;
-  p->c_time = 0; //SNXXADDEDHERE
+
+  p->e_time = 0;
+  
+  p->c_time=ticks;      // When was the process created`````
+  p->s_time=0;      // When was the process started
+  p->iow_time=0;    // time for which process is SLEEPING.
+  p->tot_wtime=0;   // total waittime for cpu for a process.
+  p->r_time=0;      // how long the process is running
+  p->e_time=0;      // When was the process exited
+  p->n_run=0;;      // number of times a process is picked by a  cpu
+#ifdef FCFS
+  p->SP=-1;
+  p->DP=-1;
+  p->niceness=-1;
+#endif
+
+#ifdef RR
+  p->SP=-1;
+  p->DP=-1;
+  p->niceness=-1;
+#endif
+
+#ifdef PBS
+  p->SP=60;
+  p->niceness=5;
+  p->DP=60;
+#endif
 
   // Allocate a trapframe page.
   if((p->trapframe = (struct trapframe *)kalloc()) == 0){
@@ -142,7 +169,9 @@ found:
   memset(&p->context, 0, sizeof(p->context));
   p->context.ra = (uint64)forkret;
   p->context.sp = p->kstack + PGSIZE;
-
+  //acquire(&p->lock);
+  //p->c_time=ticks; //SNXX
+  //release(&p->lock);
   return p;
 }
 
@@ -295,6 +324,8 @@ fork(void)
   // copy saved user registers.
   *(np->trapframe) = *(p->trapframe);
 
+  np->mask=p->mask;
+
   // Cause fork to return 0 in the child.
   np->trapframe->a0 = 0;
 
@@ -316,6 +347,7 @@ fork(void)
 
   acquire(&np->lock);
   np->state = RUNNABLE;
+
   release(&np->lock);
 
   return pid;
@@ -374,6 +406,7 @@ exit(int status)
 
   p->xstate = status;
   p->state = ZOMBIE;
+  p->e_time=ticks;
 
   release(&wait_lock);
 
@@ -451,6 +484,11 @@ scheduler(void)
     intr_on();
 
 #ifdef RR
+  if(sncount==0) 
+  {
+    //printf("entred in to RR bro\n");
+    sncount++;
+  }
 
     struct proc *p;
 
@@ -473,6 +511,11 @@ scheduler(void)
 #endif
 
 #ifdef FCFS
+if(sncount==0) 
+  {
+    //printf("entred in to FCFS bro");
+    sncount++;
+  }
   struct proc *min, *pi, *pj;
   
   for(pi = proc; pi < &proc[NPROC]; pi++) 
@@ -483,12 +526,17 @@ scheduler(void)
       min =pi;
       for(pj = proc; pj < &proc[NPROC]; pj++) 
       {
-        //acquire(&pj->lock);
+        
         if(pj->state == RUNNABLE && pj->pid >2)
         {
           if(min->c_time > pj->c_time) min =pj;
         }
-        //release(&pj->lock);
+        
+      }
+      if (lastproc != min->pid)
+      {
+        min->n_run++;
+        lastproc = min->pid;
       }
 
       min->state = RUNNING;
@@ -501,6 +549,43 @@ scheduler(void)
 #endif
 
 #ifdef PBS
+
+if(sncount==0) 
+  {
+    //printf("entred in to PBS bro");
+    sncount++;
+  }
+  struct proc *min, *pi, *pj;
+  
+  for(pi = proc; pi < &proc[NPROC]; pi++) 
+  {
+    acquire(&pi->lock);
+    if(pi->state == RUNNABLE)
+    {
+      min =pi;
+      for(pj = proc; pj < &proc[NPROC]; pj++) 
+      {
+        
+        if(pj->state == RUNNABLE)
+        {
+          if(min->DP > pj->DP) min =pj;
+        }
+        
+      }
+      if (lastproc != min->pid)
+      {
+        min->n_run++;
+        lastproc = min->pid;
+      }
+
+      min->state = RUNNING;
+      c->proc = min;
+      swtch(&c->context, &min->context);
+      c->proc = 0;
+    }
+    release(&pi->lock);
+  }
+
 #endif
 
 #ifdef MLFQ
@@ -702,3 +787,37 @@ procdump(void)
     printf("\n");
   }
 }
+int maxi(int a , int b)
+{
+  if(a > b) return a;
+  else return b;
+}
+int mini(int a , int b)
+{
+  if(a < b) return a;
+  else return b;
+}
+
+void updatetime()
+{
+  struct proc * p;
+  for(p = proc; p < &proc[NPROC]; p++)
+  {
+    acquire(&p->lock);
+    if (p->state == RUNNING) p->r_time += 1;
+    
+    if (p->state == SLEEPING) p->iow_time += 1;
+    
+    if (p->state == RUNNABLE) p->tot_wtime += 1;
+
+    int niceness = 10*p->iow_time;
+    if(p->iow_time+p->r_time!=0) niceness = niceness/(p->iow_time+p->r_time);
+    else niceness=5;
+    p->DP= maxi(0,mini(p->SP-niceness+5,100));
+
+    release(&p->lock);   
+  }
+  
+}
+
+
