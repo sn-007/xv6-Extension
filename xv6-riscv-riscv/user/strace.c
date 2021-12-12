@@ -9,6 +9,7 @@ int main(int argc, char *argv[])
         printf("wrong usage\n");
         exit(0);
     }
+    int mask = atoi(argv[1]);
 
     
     int pid = fork();
@@ -25,7 +26,7 @@ int main(int argc, char *argv[])
 
     else if (pid == 0)
     {
-        strace(2147483647);
+        strace(mask);
         exec(argv[2], argv+2);
         printf("exec %s failed\n", argv[2]);
         exit(1);

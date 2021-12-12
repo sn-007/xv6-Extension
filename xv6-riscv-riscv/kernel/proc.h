@@ -109,7 +109,6 @@ struct proc {
   //adding my variables here____________________________________________________________________
   int mask;
   int c_time;      // When was the process created
-  int s_time;      // When was the process started becomes runnable resets to zero
   int iow_time;    // time for which process is SLEEPING.
   int tot_wtime;   // total waittime for cpu for a process.
   int r_time;      // how long the process is running
@@ -118,6 +117,17 @@ struct proc {
   int DP;          // Dyanamci priority or net priority
   int niceness;    // niceness value 
   int n_run;       // number of times a process is picked by a  cpu
+
+  //MLFQ
+  int s_time;             // When was the process started becomes runnable i.e,wating for cpu; resets to zero when running started
+  int ticks[5];           // Ticks completed in ith que => ticks[i]; reset to zero when queue is changed
+  int total_ticks[5];     // Total ticks received by the process while it is running (RUNNING) in particular queue.
+  int q_num;              // The que in which the process is present
+  int w_time;             //wait time for cpu. reset to zero when the process runs on a cpu or changes queue.
+
+
+
 };
 
 void updatetime();
+int procsetpriority(int pid, int priority);

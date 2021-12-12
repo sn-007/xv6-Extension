@@ -138,6 +138,7 @@ UPROGS=\
 	$U/_sh\
 	$U/_stressfs\
 	$U/_strace\
+	$U/_setpriority\
 	$U/_usertests\
 	$U/_grind\
 	$U/_wc\

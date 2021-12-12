@@ -105,6 +105,7 @@ extern uint64 sys_wait(void);
 extern uint64 sys_write(void);
 extern uint64 sys_uptime(void);
 extern uint64 sys_strace(void);
+extern uint64 sys_setpriority(void);
 
 static uint64 (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -129,18 +130,23 @@ static uint64 (*syscalls[])(void) = {
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
 [SYS_strace]   sys_strace,
+[SYS_setpriority] sys_setpriority,
+
 };
 
 void
 syscall(void)
 {
   int num;
+  int firstarg;
+  firstarg=0;
   struct proc *p = myproc();
 
 
   num = p->trapframe->a7;
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) 
   {
+    firstarg=p->trapframe->a0;
     p->trapframe->a0 = syscalls[num]();
     
   } 
@@ -163,28 +169,28 @@ syscall(void)
         printf("%d: syscall exit{} => %d\n", p->pid,  p->trapframe->a0);
         break;
       case 3:
-        printf("%d: syscall wait{} => %d\n", p->pid,  p->trapframe->a0);
+        printf("%d: syscall wait{%d} => %d\n", p->pid, firstarg , p->trapframe->a0);
         break;
       case 4:
-        printf("%d: syscall pipe{} => %d\n", p->pid,  p->trapframe->a0);
+        printf("%d: syscall pipe{%d} => %d\n", p->pid, firstarg,  p->trapframe->a0);
         break;
       case 5:
-        printf("%d: syscall read{} => %d\n", p->pid,  p->trapframe->a0);
+        printf("%d: syscall read{%d %d %d} => %d\n", p->pid, firstarg,p->trapframe->a1,p->trapframe->a2,  p->trapframe->a0);
         break;
       case 6:
-        printf("%d: syscall kill{} => %d\n", p->pid,  p->trapframe->a0);
+        printf("%d: syscall kill{%d %d} => %d\n", p->pid, firstarg, p->trapframe->a1 , p->trapframe->a0);
         break;
       case 7:
-        printf("%d: syscall exec{} => %d\n", p->pid,  p->trapframe->a0);
+        printf("%d: syscall exec{%d %d} => %d\n", p->pid, firstarg, p->trapframe->a1 , p->trapframe->a0);
         break;
       case 8:
         printf("%d: syscall fstat{} => %d\n", p->pid,  p->trapframe->a0);
         break;
       case 9:
-        printf("%d: syscall chdir{} => %d\n", p->pid,  p->trapframe->a0);
+        printf("%d: syscall chdir{%d} => %d\n", p->pid, firstarg,  p->trapframe->a0);
         break;
       case 10:
-        printf("%d: syscall dup{} => %d\n", p->pid,  p->trapframe->a0);
+        printf("%d: syscall dup{%d} => %d\n", p->pid, firstarg,  p->trapframe->a0);
         break;
       case 11:
         printf("%d: syscall getpid{} => %d\n", p->pid,  p->trapframe->a0);
@@ -193,34 +199,34 @@ syscall(void)
         printf("%d: syscall sbrk{} => %d\n", p->pid,  p->trapframe->a0);
         break;
       case 13:
-        printf("%d: syscall sleep{} => %d\n", p->pid,  p->trapframe->a0);
+        printf("%d: syscall sleep{%d} => %d\n", p->pid, firstarg ,  p->trapframe->a0);
         break;
       case 14:
         printf("%d: syscall uptime{} => %d\n", p->pid,  p->trapframe->a0);
         break;
       case 15:
-        printf("%d: syscall open{} => %d\n", p->pid,  p->trapframe->a0);
+        printf("%d: syscall open{%d %d} => %d\n", p->pid, firstarg, p->trapframe->a1 , p->trapframe->a0);
         break;
       case 16:
-        printf("%d: syscall write{} => %d\n", p->pid,  p->trapframe->a0);
+        printf("%d: syscall write{%d %d %d} => %d\n", p->pid, firstarg,p->trapframe->a1,p->trapframe->a2,  p->trapframe->a0);
         break;
       case 17:
         printf("%d: syscall mknod{} => %d\n", p->pid,  p->trapframe->a0);
         break;
       case 18:
-        printf("%d: syscall unlink{} => %d\n", p->pid,  p->trapframe->a0);
+        printf("%d: syscall unlink{%d} => %d\n", p->pid, firstarg,  p->trapframe->a0);
         break;
       case 19:
-        printf("%d: syscall link{} => %d\n", p->pid,  p->trapframe->a0);
+        printf("%d: syscall link{%d %d} => %d\n", p->pid, firstarg, p->trapframe->a1 , p->trapframe->a0);
         break;
       case 20:
-        printf("%d: syscall mkdir{} => %d\n", p->pid,  p->trapframe->a0);
+        printf("%d: syscall mkdir{%d} => %d\n", p->pid, firstarg,  p->trapframe->a0);
         break;
       case 21:
-        printf("%d: syscall close{} => %d\n", p->pid,  p->trapframe->a0);
+        printf("%d: syscall close{%d} => %d\n", p->pid, firstarg,  p->trapframe->a0);
         break;
       case 22:
-        printf("%d: syscall strace{} => %d\n", p->pid,  p->trapframe->a0);
+        printf("%d: syscall strace{%d} => %d\n", p->pid, firstarg,  p->trapframe->a0);
         break;
 
 

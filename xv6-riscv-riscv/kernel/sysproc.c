@@ -124,3 +124,15 @@ sys_strace(void)
 
   return 0;
 }
+
+uint64
+sys_setpriority(void)
+{
+  //printf("syspriority called\n");
+  int priority, pid;
+  if (argint(0, &priority) < 0) return -1;
+  if (argint(1, &pid) < 0)      return -1;
+
+  return procsetpriority(pid,priority);
+  
+}
